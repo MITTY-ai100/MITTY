@@ -61,6 +61,7 @@ if st.button('요청하기'):
         st.image(image_url)
   elif(type == '***이미지 업로드***'):
     with st.spinner('이미지 생성중...'):
+      
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
@@ -88,15 +89,16 @@ if st.button('요청하기'):
         }
 
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+
                 
         if response.status_code == 200:
             result = response.json()
             # content 값 추출
             message_content = result['choices'][0]['message']['content']
-            print('message_content',message_content)
             img_response = client.images.generate(
                 model="dall-e-3",
-                prompt=f'{message_content} 정보를 기반으로 잘 그린 그림을 그려줘. 멋있게 그려줘.',
+                prompt=f'{message_content} 정보를 기반으로 케릭터를 디즈니풍으로 만들어줘',
                 quality="standard",
                 size="1024x1024",
                 n=1,
@@ -108,5 +110,3 @@ if st.button('요청하기'):
 
   else:
     st.write('필요없다면서 왜 누르세요 😢😢😢')
-
-
