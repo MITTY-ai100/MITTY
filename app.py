@@ -100,8 +100,8 @@ if choices == ":violet-background[이미지 업로드]":
                     message_content = result['choices'][0]['message']['content']
                     img_response = client.images.generate(
                         model="dall-e-3",
-                        prompt=f'{message_content} {feedback} 정보를 기반으로 잘 그린 그림을 그려줘. 너는 최고의 그림을 만들어야해. 무조건 멋있게 그려줘. 만약 퀄리티가 떨어진다면, 퀄리티를 높여서 그려줘. 채색이 되어있지 않다면 색칠을 꼭 해주고, 너가 할 수 있는 masterpiece 를 만들어.',
-                        quality="hd",
+                        prompt=f'{message_content} 의 정보는 어린아이가 그린 그림에 대한 정보야. 이 그림에서 어린아이가 그리고 싶었던 그림을 파악하고, 너가 새롭게 멋있는 그림을 모든 방안을 동원해서 최고의 그림을 만들어줘!',
+                        quality="standard",
                         size="1024x1024",
                         n=1,
                     )
