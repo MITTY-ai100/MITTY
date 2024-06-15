@@ -48,6 +48,38 @@ if choices == ":violet-background[이미지 업로드]":
                             "content": [
                                 {
                                     "type": "text",
+                                    "text": "이 그림이 퀄리티가 좋은 그림인지 확인해주고, 만약 퀄리티가 떨어진다면 어떻게 하면 더 좋은 그림이 될지 300자 이내로 간단하게 피드백해줘."
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "max_tokens": 300
+                }
+                feedback = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+                if feedback.status_code == 200:
+                    result = feedback.json()
+                    # content 값 추출
+                    message_content = result['choices'][0]['message']['content']
+                    st.write(message_content)
+                
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}"
+                }
+                payload = {
+                    "model": "gpt-4o",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
                                     "text": "내가 업로드한 이미지 파일의 케릭터를 최대한 자세하게 분석해줘."
                                 },
                                 {
@@ -66,11 +98,10 @@ if choices == ":violet-background[이미지 업로드]":
                     result = response.json()
                     # content 값 추출
                     message_content = result['choices'][0]['message']['content']
-                    print('message_content', message_content)
                     img_response = client.images.generate(
                         model="dall-e-3",
-                        prompt=f'{message_content} 정보를 기반으로 잘 그린 그림을 그려줘. 멋있게 그려줘.',
-                        quality="standard",
+                        prompt=f'{message_content} {feedback} 정보를 기반으로 잘 그린 그림을 그려줘. 너는 최고의 그림을 만들어야해. 무조건 멋있게 그려줘. 만약 퀄리티가 떨어진다면, 퀄리티를 높여서 그려줘. 채색이 되어있지 않다면 색칠을 꼭 해주고, 너가 할 수 있는 masterpiece 를 만들어.',
+                        quality="hd",
                         size="1024x1024",
                         n=1,
                     )
