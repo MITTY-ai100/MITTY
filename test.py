@@ -1,14 +1,14 @@
 # start get env region
 
-# from dotenv import load_dotenv
-# import os 
+from dotenv import load_dotenv
+import os 
 
-# # load .env
-# load_dotenv()
+# load .env
+load_dotenv()
 
-# openAPIKey = os.environ.get('OPEN_API_KEY')
+openAPIKey = os.environ.get('OPENAI_API_KEY')
 
-# print(openAPIKey)
+print(openAPIKey)
 
 # end get env region
 
