@@ -24,9 +24,9 @@ st.markdown(
 )
 choices = st.radio(
     "어떤 작업을 하고 싶으신가요?",
-    [":violet-background[이미지 업로드]", ":violet-background[AI 기반 이미지 생성]"],
+    [":violet-background[이미지 업로드]", ":violet-background[AI 기반 이미지 생성]", ":violet-background[음성기반 이미지 생성]"],
     index=None,
-)
+    captions = ["", "", "./speech.mp3"])
 
 if choices == ":violet-background[이미지 업로드]":
     uploaded_file = st.file_uploader('이미지를 업로드 하세요.', type=['png', 'jpg', 'jpeg'])
@@ -123,6 +123,24 @@ if choices == ":violet-background[AI 기반 이미지 생성]":
             )
         image_url = response.data[0].url
         st.image(image_url)
+if choices == ":violet-background[음성기반 이미지 생성]":
+    if st.button('음성데이터 기반으로 이미지생성', type="primary"):
+      with st.spinner('생성중...'):
+          audio_file= open("./speech.mp3", "rb")
+          transcription = client.audio.transcriptions.create(
+              model="whisper-1", 
+              file=audio_file
+              )
+          st.write('감지된 음성 텍스트:', transcription.text)
+          response = client.images.generate(
+            model="dall-e-3",
+            prompt=f'{transcription.text}',
+            quality="standard",
+            size="1024x1024",
+            n=1,
+            )
+          image_url = response.data[0].url
+          st.image(image_url)
 
 st.divider()
 
