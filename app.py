@@ -19,7 +19,7 @@ st.columns(3)[1].title("MITTY BOT 🧑🏼‍🎨🧑🏼‍🎨🧑🏼‍🎨�
 st.header(':violet[***당신의 상상이 곧 현실이 된다*** 🫢]', divider='rainbow')
 st.markdown(
     """
-    <h3 style='font-size:16px;'>키워드를 입력하거나 이미지를 업로드하면 AI가 이미지를 생성하고, 이를 기반으로 네 컷 만화와 짧은 만화 영상을 제작해 드립니다.</h3>
+    <h3 style='font-size:16px;'>키워드를 입력하거나 이미지를 업로드하면 AI가 이미지를 생성거나, 이를 기반으로 네 컷 만화 등 다양한 미디어파일을 만들어드립니다.</h3>
     """, unsafe_allow_html=True
 )
 choices = st.radio(
