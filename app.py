@@ -5,8 +5,19 @@ import streamlit as st
 from PIL import Image
 import base64
 import requests
+import pyaudio
+import wave
+
 
 load_dotenv()
+
+# 녹음 설정
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
+CHUNK = 1024
+RECORD_SECONDS = 5
+WAVE_OUTPUT_FILENAME = "output.wav"
 
 api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -25,8 +36,7 @@ st.markdown(
 choices = st.radio(
     "어떤 작업을 하고 싶으신가요?",
     [":violet-background[이미지 업로드]", ":violet-background[AI 기반 이미지 생성]", ":violet-background[음성기반 이미지 생성]"],
-    index=None,
-    captions = ["", "", "./speech.mp3"])
+    index=None)
 
 if choices == ":violet-background[이미지 업로드]":
     uploaded_file = st.file_uploader('이미지를 업로드 하세요.', type=['png', 'jpg', 'jpeg'])
@@ -131,16 +141,74 @@ if choices == ":violet-background[음성기반 이미지 생성]":
               model="whisper-1", 
               file=audio_file
               )
-          st.write('감지된 음성 텍스트:', transcription.text)
-          response = client.images.generate(
-            model="dall-e-3",
-            prompt=f'{transcription.text}',
-            quality="standard",
-            size="1024x1024",
-            n=1,
+          voice = transcription.text
+          
+    # 녹음 버튼
+    if st.button("Record"):
+        with st.spinner('녹음 및 이미지 생성중...'):
+            audio = pyaudio.PyAudio()
+
+            # 녹음 시작
+            stream = audio.open(format=FORMAT, channels=CHANNELS,
+                                rate=RATE, input=True,
+                                frames_per_buffer=CHUNK)
+            st.write("Recording...")
+            frames = []
+
+            for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+                data = stream.read(CHUNK)
+                frames.append(data)
+
+            st.write("Finished recording.")
+
+            # 녹음 종료
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
+
+            # 녹음 파일 저장
+            with wave.open(WAVE_OUTPUT_FILENAME, 'wb') as wf:
+                wf.setnchannels(CHANNELS)
+                wf.setsampwidth(audio.get_sample_size(FORMAT))
+                wf.setframerate(RATE)
+                wf.writeframes(b''.join(frames))
+
+            # 녹음 파일을 OpenAI Whisper API로 변환
+            with open(WAVE_OUTPUT_FILENAME, 'rb') as audio_file:
+                response = requests.post(
+                    "https://api.openai.com/v1/audio/transcriptions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}"
+                    },
+                    files={
+                        "file": audio_file
+                    },
+                    data={
+                        "model": "whisper-1"
+                    }
+                )
+                
+                if response.status_code == 200:
+                    transcription = response.json()
+                    voice = transcription["text"]
+                else:
+                    st.write("Error:", response.status_code)
+                    st.write(response.json())
+            st.write('감지된 음성 텍스트:', voice)
+            result_response = client.images.generate(
+                model="dall-e-3",
+                prompt=f'{voice}',
+                quality="standard",
+                size="1024x1024",
+                n=1,
             )
-          image_url = response.data[0].url
-          st.image(image_url)
+            image_url = result_response.data[0].url
+            st.image(image_url)
+
+            
+
+            # 녹음 파일 삭제    
+            os.remove(WAVE_OUTPUT_FILENAME)
 
 st.divider()
 
